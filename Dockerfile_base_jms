@@ -1,0 +1,10 @@
+FROM maven AS libs
+
+COPY pom.xml .
+
+RUN mvn dependency:copy-dependencies
+
+FROM sagcr.azurecr.io/webmethods-edge-runtime:11.0.10 as final
+
+# copy Solace JMS jars
+COPY --chown=1724:1724 --from=libs /target/dependency/sol-*jar /opt/softwareag/IntegrationServer/lib/jars/custom
