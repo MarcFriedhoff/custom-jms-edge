@@ -80,3 +80,45 @@ The primary service can be accessed via the following ports:
 - ./application.properties: Configuration file for the is-edge service.
 - git: Mounted directory for the is-edge service.
 - edge-msr-solace-packages: Packages directory for the is-edge service.
+
+## Using Docker only (No Docker Compose)
+
+### Solace
+
+```
+docker run -d \
+  --name solace-single-node \
+  -e username_admin_globalaccesslevel=admin \
+  -e username_admin_password=admin \
+  -e system_scaling_maxconnectioncount=100 \
+  -v storage-group:/var/lib/solace \
+  --shm-size=1g \
+  --ulimit core=-1 \
+  --ulimit nofile=2448:6592 \
+  -p 8008:8008 \
+  -p 1443:1443 \
+  -p 1943:1943 \
+  -p 1883:1883 \
+  -p 8080:8080 \
+  -p 55554:55555 \
+  -p 8000:8000 \
+  -p 5672:5672 \
+  -p 9000:9000 \
+  -p 2222:2222 \
+  solace/solace-pubsub-standard:latest
+```
+
+### webMethods Edge Runtime
+
+```
+docker run -d \
+  --name is-edge \
+  -e SAG_IS_CLOUD_REGISTER_URL=https://psdev.int-aws-de.webmethods.io \
+  -e SAG_IS_EDGE_CLOUD_ALIAS=EdgeRuntime_mfri_edge \
+  -e SAG_IS_CLOUD_REGISTER_TOKEN=bebda863776845bbb0e97f0bec614c14298c2469169a443d98f1c96117a9774d \
+  -v ./application.properties:/opt/softwareag/IntegrationServer/application.properties \
+  -v /Users/mfri/Work/customer/enexis/training/jms/git:/mnt/git \
+  -v edge-msr-solace-packages:/opt/softwareag/IntegrationServer/packages \
+  -p 5558:5555 \
+  webmethods-edge-runtime-solace:11.0.10
+```
