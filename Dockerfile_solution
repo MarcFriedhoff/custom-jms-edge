@@ -1,0 +1,11 @@
+
+FROM webmethods-edge-runtime-solace:11.0.10
+
+USER root
+
+# copy 
+RUN --mount=type=secret,id=token_git,dst=/run/secrets/token_git \
+    /opt/softwareag/wpm/bin/wpm.sh install -r https://github.com/MarcFriedhoff/SolaceDemo -p $(cat /run/secrets/token_git) -u MarcFriedhoff SolaceDemo:master
+
+USER 1724
+WORKDIR /

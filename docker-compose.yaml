@@ -1,0 +1,64 @@
+# docker-compose -f PubSubStandard_singleNode.yml up
+version: '3.3'
+
+services:
+  solace:
+    container_name: solace-single-node
+    image: solace/solace-pubsub-standard:latest
+    environment:
+      - username_admin_globalaccesslevel=admin
+      - username_admin_password=admin
+      - system_scaling_maxconnectioncount=100
+    volumes:
+      - "storage-group:/var/lib/solace"
+    shm_size: 1g
+    ulimits:
+      core: -1
+      nofile:
+        soft: 2448
+        hard: 6592
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 1
+    ports:
+    #Port Mappings:  With the exception of SMF, ports are mapped straight
+    #through from host to container.  This may result in port collisions on
+    #commonly used ports that will cause failure of the container to start.
+      #Web transport
+      - '8008:8008'
+      #Web transport over TLS
+      - '1443:1443'
+      #SEMP over TLS
+      - '1943:1943'
+      #MQTT Default VPN
+      - '1883:1883'
+      - '8080:8080'
+      - '55554:55555' 
+      - '8000:8000' 
+      - '5672:5672' 
+      - '9000:9000'
+      - '2222:2222'
+
+  is-edge:
+    container_name: is-edge
+    image: webmethods-edge-runtime-solace:11.0.10
+    environment:
+      - SAG_IS_CLOUD_REGISTER_URL=${SAG_IS_CLOUD_REGISTER_URL}
+      - SAG_IS_EDGE_CLOUD_ALIAS=${SAG_IS_EDGE_CLOUD_ALIAS}
+      - SAG_IS_CLOUD_REGISTER_TOKEN=${SAG_IS_CLOUD_REGISTER_TOKEN}
+    ports:
+      - '5558:5555'
+    volumes:
+      - ./application.properties:/opt/softwareag/IntegrationServer/application.properties
+      - ./jms/git:/mnt/git
+      - edge-msr-solace-packages:/opt/softwareag/IntegrationServer/packages
+
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 1
+
+volumes:
+  storage-group:
+  edge-msr-solace-packages:
